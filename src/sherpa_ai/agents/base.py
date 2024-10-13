@@ -40,6 +40,20 @@ class BaseAgent(ABC, BaseModel):
     def synthesize_output(self) -> str:
         pass
 
+    def send_event(self, event: str, args: dict):
+        """
+        Send an event to the state machine in the belief
+
+        Args:
+            event (str): The event name
+            args (dict): The arguments for the event
+        """
+        if self.belief.state_machine is None:
+            logger.error("State machine is not defined in the belief")
+            return
+
+        getattr(self.belief.state_machine, event)(**args)
+
     def run(self):
         self.verbose_logger.log(f"⏳{self.name} is thinking...")
         logger.debug(f"```⏳{self.name} is thinking...```")
@@ -52,6 +66,8 @@ class BaseAgent(ABC, BaseModel):
             self.belief.set_actions(actions)
 
         for i in range(self.num_runs):
+            if len(self.belief.get_actions()) == 0:
+                break
             try:
                 result = self.policy.select_action(self.belief)
             except Exception as e:
@@ -77,12 +93,6 @@ class BaseAgent(ABC, BaseModel):
                 f"🤖{self.name} is executing```" "``` {result.action.name}...```"
             )
 
-            self.belief.update_internal(
-                EventType.action,
-                self.name,
-                "Action: " + result.action.name + str(result.args),
-            )
-
             try:
                 action_output = self.act(result.action, result.args)
             except Exception as e:
@@ -91,18 +101,13 @@ class BaseAgent(ABC, BaseModel):
                     self.feedback_agent_name,
                     f"Error in executing action: {result.action.name}. Error: {e}",
                 )
-                logger.error(
-                    f"Error in executing action: {result.action.name}. Error: {e}"
-                )
+                logger.exception(e)
                 continue
 
             action_output = self.belief.get(result.action.name, action_output)
 
             self.verbose_logger.log(f"```Action output: {action_output}```")
             logger.debug(f"```Action output: {action_output}```")
-            self.belief.update_internal(
-                EventType.action_output, self.name, "Output: " + action_output
-            )
 
         result = (
             self.validate_output()
