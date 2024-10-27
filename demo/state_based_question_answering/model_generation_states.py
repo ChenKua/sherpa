@@ -50,26 +50,85 @@ def get_actions(belief: Belief) -> dict[str, BaseAction]:
         belief=belief,
         llm=llm_class,
     )
-
-    generate_classes = GenerateClass(
-        name="generate_classes",
-        usage="Generate class elements based on the current modeling problem",
+    
+    identify_nouns = IdentifyNouns(
+        name="identify_nouns",
+        usage="Identify nouns based on the modeling problem",
         belief=belief,
         llm=llm_class,
     )
 
-    generate_relationships = GenerateRelationship(
-        name="generate_relationships",
-        usage="Generate relationsihp elements based on the current modeling problem",
-        belief=belief,
-        llm=llm_relation,
-    )
     identify_classes = IdentifyClasses(
         name="identify_classes",
-        usage="Identify classes based on the current modeling problem",
+        usage="Identify classes based on the modeling problem",
+        belief=belief,
+        llm=llm_class,
+    )
+    
+    identify_attributes = IdentifyAttributes(
+        name="identify_attributes",
+        usage="Identify attributes based on the modeling problem and nouns",
+        belief=belief,
+        llm=llm_class,
+    )
+
+    
+    identify_enumeration_classes = IdentifyEnumerationClasses(
+        name="identify_enumeration_classes",
+        usage="Identify enumeration classes based on the current modeling problem",
+        belief=belief,
+        llm=llm_class,
+    )
+    
+    identify_abstract_classes = IdentifyAbstractClasses(
+        name="identify_abstract_classes",
+        usage="Identify abstract classes based on the current modeling problem",
+        belief=belief,
+        llm=llm_class,
+    )
+    
+    identify_player_role_pattern = IdentifyPlayerRolePattern(
+        name="identify_player_role_pattern",
+        usage="Identify player role pattern based on the current modeling problem",
+        belief=belief,
+        llm=llm_class,
+    )
+
+    summarize_player_role_pattern = SummarizePlayerRolePattern(
+        name="summarize_player_role_pattern",
+        usage="Summarize player role pattern based on the current modeling problem",
+        belief=belief,
+        llm=llm_class,
+    )
+    
+    integrate_classes = IntegrateClasses(
+        name="integrate_classes",
+        usage="Integrate player role pattern into classes based on the current modeling problem",
+        belief=belief,
+        llm=llm_class,
+    )
+    
+    generate_feedback = GenerateFeedback(
+        name="generate_feedback",
+        usage="Generate feeback bsed on the current domain model",
+        belief=belief,
+        llm=llm_class,
+    )
+    
+    integrate_feedback = IntegrateFeedback(
+        name="integrate_feedback",
+        usage="Integrate feeback into the current domain model",
+        belief=belief,
+        llm=llm_class,
+    )
+    
+    identify_relationships = IdentifyRelationships(
+        name="identify_relationships",
+        usage="Identify relationships based on the current domain model",
         belief=belief,
         llm=llm_relation,
     )
+    
 
     update_belief = UpdateBelief(belief=belief)
 
@@ -81,9 +140,17 @@ def get_actions(belief: Belief) -> dict[str, BaseAction]:
         answer_question,
         update_belief,
         retrieve_belief,
-        generate_classes,
-        generate_relationships,
         identify_nouns,
+        identify_classes,
+        identify_enumeration_classes,
+        identify_attributes,
+        identify_abstract_classes,
+        identify_player_role_pattern,
+        summarize_player_role_pattern,
+        integrate_classes,
+        generate_feedback,
+        integrate_feedback,
+        identify_relationships,
     ]
 
     return {action.name: action for action in actions}
@@ -138,6 +205,7 @@ def add_mg_sm(belief: Belief) -> Belief:
             "initial": "FeedbackGeneration",
         },
         {"name": "RelationshipIdentificationState"},
+        {"name":"InspectCompleteModel"},
         {"name": "end"},
     ]
     initial = "Start"
@@ -152,61 +220,123 @@ def add_mg_sm(belief: Belief) -> Belief:
             "trigger": "Identify_nouns",
             "source": "ClassIdentificationState_NounIdentification",
             "dest": "ClassIdentificationState_ClassIdentification",
-            "before": "identify_nouns",  # things to do, different name with trigger
+            "before": "identify_nouns",  
         },
+        # {
+        #     "trigger": "Identify_nouns_again",
+        #     "source": "ClassIdentificationState_ClassIdentification",
+        #     "dest": "ClassIdentificationState_NounIdentification",  
+        # },
         {
             "trigger": "Identify_classes",
             "source": "ClassIdentificationState_ClassIdentification",
             "dest": "ClassIdentificationState_AttributeIdentification",
             "before": "identify_classes",
         },
+        # {
+        #     "trigger": "Identify_classes_again",
+        #     "source": "ClassIdentificationState_AttributeIdentification",
+        #     "dest": "ClassIdentificationState_ClassIdentification",
+        #     "before": "identify_classes",
+        # },
         {
-            "trigger": "identifyAttributes",
+            "trigger": "Identify_attributes",
             "source": "ClassIdentificationState_AttributeIdentification",
             "dest": "ClassIdentificationState_EnumerationIdentification",
+            "before": "identify_attributes",
         },
+        # {
+        #     "trigger": "Identify_attributes_again",
+        #     "source": "ClassIdentificationState_EnumerationIdentification",
+        #     "dest": "ClassIdentificationState_AttributeIdentification",
+        # },
         {
-            "trigger": "identifyEnumerations",
+            "trigger": "Identify_enumerations",
             "source": "ClassIdentificationState_EnumerationIdentification",
             "dest": "ClassIdentificationState_AbstractClassIdentification",
+            "before": "identify_enumeration_classes",
         },
+        # {
+        #     "trigger": "Identify_enumerations_again",
+        #     "source": "ClassIdentificationState_AbstractClassIdentification",
+        #     "dest": "ClassIdentificationState_EnumerationIdentification",
+        # },
         {
-            "trigger": "identifyAbstractClass",
+            "trigger": "Identify_abstract_classes",
             "source": "ClassIdentificationState_AbstractClassIdentification",
             "dest": "PlayerRolePatternIdentificationState",
-            # "before": "retrieve_belief",
+            "before": "identify_abstract_classes",
         },
+        # {
+        #     "trigger": "Identify_abstract_classes_again",
+        #     "source": "PlayerRolePatternIdentificationState",
+        #     "dest": "ClassIdentificationState_AbstractClassIdentification",
+        # },
         {
-            "trigger": "identifyPattern",
+            "trigger": "Identify_pattern",
             "source": "PlayerRolePatternIdentificationState_PatternIdentification",
             "dest": "PlayerRolePatternIdentificationState_PatternSummarization",
+            "before":"identify_player_role_pattern",
         },
-        # ???
         {
-            "trigger": "summarizePattern",
+            "trigger": "Summarize_pattern",
             "source": "PlayerRolePatternIdentificationState_PatternSummarization",
             "dest": "PlayerRolePatternIdentificationState_PatternIntegration",
+            "before": "summarize_player_role_pattern",
         },
+        # {
+        #     "trigger": "Summarize_pattern_again",
+        #     "source": "PlayerRolePatternIdentificationState_PatternIntegration",
+        #     "dest": "PlayerRolePatternIdentificationState_PatternSummarization",
+        # },
         {
-            "trigger": "integratePattern",
+            "trigger": "Integrate_pattern",
             "source": "PlayerRolePatternIdentificationState_PatternIntegration",
             "dest": "FeedbackGenerationState",
-            # "before": "update_belief",
+            "before": "integrate_classes",
         },
+        # {
+        #     "trigger": "Integrate_pattern_again",
+        #     "source": "FeedbackGenerationState",
+        #     "dest": "PlayerRolePatternIdentificationState_PatternIntegration",
+        # },
         {
-            "trigger": "generateFeedback",
+            "trigger": "Generate_feedback",
             "source": "FeedbackGenerationState_FeedbackGeneration",
             "dest": "FeedbackGenerationState_FeedbackIntegration",
+            "before": "generate_feedback",
         },
+        # {
+        #     "trigger": "Generate_feedback_again",
+        #     "source": "FeedbackGenerationState_FeedbackIntegration",
+        #     "dest": "FeedbackGenerationState_FeedbackGeneration",
+        # },
         {
-            "trigger": "integrateFeedback",
+            "trigger": "Integrate_feedback",
             "source": "FeedbackGenerationState_FeedbackIntegration",
             "dest": "RelationshipIdentificationState",
+            "before": "integrate_feedback",
+        },
+        # {
+        #     "trigger": "Integrate_feedback_again",
+        #     "source": "RelationshipIdentificationState",
+        #     "dest": "FeedbackGenerationState_FeedbackIntegration",
+        # },
+        {
+            "trigger": "Identify_relationships",
+            "source": "RelationshipIdentificationState",
+            "dest": "InspectCompleteModel",
+            "before":"identify_relationships"
         },
         {
-            "trigger": "identifyRelationships",
-            "source": "RelationshipIdentificationState",
+            "trigger": "finish",
+            "source": "InspectCompleteModel",
             "dest": "end",
+        },
+        {
+            "trigger": "Improve_model",
+            "source": "InspectCompleteModel",
+            "dest": "FeedbackGenerationState_FeedbackGeneration",
         },
     ]
 

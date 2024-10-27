@@ -683,6 +683,9 @@ class GenerateFeedback(BaseAction):
         partial_model = self.belief.get("identify_abstract_classes")
         player_role_pattern = self.belief.get("summarize_player_role_pattern")
         complete_model = self.belief.get("integrate_classes")
+        if not self.belief.get("complete_model") is None:
+            complete_model = self.belief.get("complete_model")           
+            
         prompt = (
             f"Task description: {task_description}"
             + "\n\n"
@@ -701,7 +704,7 @@ class GenerateFeedback(BaseAction):
         comments = [
             i.strip() for i in comments if (i != "" and i != "\n" and i != None)
         ]
-
+        print("\033[91mNew comments\033[0m")
         print(comments)
 
         return comments
@@ -736,6 +739,10 @@ class IntegrateFeedback(BaseAction):
         partial_model = self.belief.get("identify_abstract_classes")
         player_role_pattern = self.belief.get("summarize_player_role_pattern")
         complete_model = self.belief.get("integrate_classes")
+        
+        if not self.belief.get("complete_model") is None:
+            complete_model = self.belief.get("complete_model")   
+            
         comments = self.belief.get("generate_feedback")
         prompt = (
             f"Task description: {task_description}"
@@ -760,10 +767,12 @@ class IntegrateFeedback(BaseAction):
         ]
 
         print("=" * 40)
+        print("\033[91mrevised model - classes only\033[0m")
         print("revised model - classes only")
         print(class_attribute_list)
         print("=" * 40)
-
+    
+        self.belief.set("complete_model", class_attribute_list)  
         return class_attribute_list
 
 
@@ -807,7 +816,7 @@ class IdentifyRelationships(BaseAction):
         1 Student associate 0..1 StudentProfile
 
         Note:
-        1. Use the classes in the given generated classes list, generate the classes and their relationships.
+        1. Use the classes in the given generated classes list, generate the classes (with attributes and enumeration abstract keywords) and their relationships.
         2. Only add the system class if the existing class diagram misses the system class.
         3. Do NOT change existing classes or add other classes besides the system class.
         4. In most of the cases, there is only 1 relationship within the same two classes.
@@ -835,6 +844,9 @@ class IdentifyRelationships(BaseAction):
         player_role_pattern = self.belief.get("summarize_player_role_pattern")
         # complete_model = self.belief.get("integrate_classes")
         revised_model = self.belief.get("integrate_feedback")
+        if not self.belief.get("complete_model") is None:
+            revised_model = self.belief.get("complete_model")
+            
         prompt = (
             relationship_prompt
             + "\n\n"
@@ -856,7 +868,12 @@ class IdentifyRelationships(BaseAction):
         ]
 
         print("#"*40)
-        print("final model:")
-        print(complete_class_diagram)
+        print("\033[91m final model - \033[0m")
+        for e in complete_class_diagram:
+            print(e)
+        # print(complete_class_diagram)
         print("#"*40)
+        
+        # identify if there is issue
+        self.belief.get("complete_model", complete_class_diagram)
         return complete_class_diagram
