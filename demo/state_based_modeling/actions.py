@@ -104,6 +104,7 @@ class IdentifyNouns(BaseAction):
     llm: any
 
     def execute(self) -> str:
+        print("\033[91m IdentifyNouns \033[0m")
         description = self.belief.get("description")
         task_description = self.belief.get("task_description")
         noun_analysis_prompt = """
@@ -382,7 +383,7 @@ class IdentifyAbstractClasses(BaseAction):
         constraint = """
         Only add the keyword abstract if the original class should be an abstract class
         You can adjust the attributes within the subclass if the super class already contain the attribute
-        Output all classes, including abstract classes, normal classes, and enumeration class
+        Output ALL classes, including abstract classes, normal classes, and enumeration class
         """
 
         nouns_list = self.belief.get("identify_nouns")
@@ -427,6 +428,7 @@ class IdentifyPlayerRolePattern(BaseAction):
     llm: any
 
     def execute(self) -> str:
+        print("\033[91m IdentifyPlayerRolePattern \033[0m")
         description = self.belief.get("description")
         task_description = self.belief.get("task_description")
 
@@ -666,6 +668,7 @@ class GenerateFeedback(BaseAction):
     llm: any
 
     def execute(self) -> str:
+        print("\033[91m GenerateFeedback \033[0m")
         description = self.belief.get("description")
         task_description = self.belief.get("task_description")
 
@@ -706,7 +709,6 @@ class GenerateFeedback(BaseAction):
         comments = [
             i.strip() for i in comments if (i != "" and i != "\n" and i != None)
         ]
-        print("\033[91mNew comments\033[0m")
         print(comments)
 
         return comments
@@ -721,6 +723,7 @@ class IntegrateFeedback(BaseAction):
     llm: any
 
     def execute(self) -> str:
+        print("\033[91m IntegrateFeedback \033[0m")
         description = self.belief.get("description")
         task_description = self.belief.get("task_description")
 
@@ -771,7 +774,8 @@ class IntegrateFeedback(BaseAction):
         print("=" * 40)
         print("\033[91mrevised model - classes only\033[0m")
         print("revised model - classes only")
-        print(class_attribute_list)
+        for e in class_attribute_list:
+            print(e)
         print("=" * 40)
     
         self.belief.set("complete_model", class_attribute_list)  
