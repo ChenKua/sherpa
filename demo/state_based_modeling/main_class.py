@@ -1,4 +1,4 @@
-from main_class import add_mg_sm
+from model_class import add_mg_sm
 
 from sherpa_ai.agents.qa_agent import QAAgent
 from sherpa_ai.events import Event, EventType
