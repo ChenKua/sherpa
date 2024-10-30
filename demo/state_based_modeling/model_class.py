@@ -314,7 +314,7 @@ def add_mg_sm(belief: Belief) -> Belief:
         {
             "trigger": "Integrate_feedback",
             "source": "FeedbackGenerationState_FeedbackIntegration",
-            "dest": "RelationshipIdentificationState",
+            "dest": "InspectCompleteModel",
             "before": "integrate_feedback",
         },
         # {
@@ -323,21 +323,26 @@ def add_mg_sm(belief: Belief) -> Belief:
         #     "dest": "FeedbackGenerationState_FeedbackIntegration",
         # },
         {
-            "trigger": "Identify_relationships",
-            "source": "RelationshipIdentificationState",
-            "dest": "InspectCompleteModel",
-            "before":"identify_relationships"
-        },
-        {
             "trigger": "finish",
             "source": "InspectCompleteModel",
             "dest": "end",
         },
         {
-            "trigger": "Improve_model",
+            "trigger": "Generate_feedback",
             "source": "InspectCompleteModel",
             "dest": "FeedbackGenerationState_FeedbackGeneration",
         },
+        {
+            "trigger": "Regenerate_class",
+            "source": "InspectCompleteModel",
+            "dest": "ClassIdentificationState",
+        },
+        {
+            "trigger": "Regenerate_pattern",
+            "source": "InspectCompleteModel",
+            "dest": "PlayerRolePatternIdentificationState",
+        },
+
     ]
 
     action_map = get_actions(belief)

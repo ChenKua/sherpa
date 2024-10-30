@@ -1,4 +1,4 @@
-from model_generation_states import add_mg_sm
+from demo.state_based_modeling.model_complete import add_mg_sm
 
 from sherpa_ai.agents.qa_agent import QAAgent
 from sherpa_ai.events import Event, EventType

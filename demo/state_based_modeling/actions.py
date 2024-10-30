@@ -506,6 +506,8 @@ class IdentifyPlayerRolePattern(BaseAction):
         """
 
         partial_model = self.belief.get("identify_abstract_classes")
+        if self.belief.get("complete_model"):
+            partial_model = self.belief.get("complete_model")
         prompt = (
             task_description
             + "\n\n"
